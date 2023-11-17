@@ -34,7 +34,7 @@ public class FamilyTree
             // Add childNode to this node's children list. Also
             // set childNode's parent to this node.
         	children.add(childNode);
-        	childNode.parent = childNode; 
+        	childNode.parent = this; 
         }
         
         
@@ -70,11 +70,11 @@ public class FamilyTree
             // the nodes of a tree is like traversing a linked list. If that isn’t clear,
             // draw a tree, mark any leaf node, and then mark its ancestors in order from
             // recent to ancient. Expect a question about this on the final exam.
-            TreeNode temp = parent;
+            TreeNode node = parent;
             
-            while (temp != null) {
-            	ancestors.add(temp);
-            	temp = temp.parent;
+            while (node != null) {
+            	ancestors.add(node);
+            	node = node.parent;
             }
             
             return ancestors;
@@ -135,32 +135,36 @@ public class FamilyTree
 	//
 	private void addLine(String line) throws TreeException
 	{
-		// Extract parent and array of children.
-		int colonIndex = ?? should be the index of the colon in line.
+		//Extract parent and array of children
+		int colonIndex = line.indexOf(':'); // should be the index of the colon in line.
 		if (colonIndex < 0)
-			?? throw a TreeException with a useful message
-		String parent = ?? The substring of line that starts at char #0 and ends just before colonIndex. Check the API for 
-				           class java.util.String, method substring(), if you need guidance.
-		String childrenString = ?? The substring of line that starts just after colonIndex and goes through the end of
-				                   the line. You'll use a different version of substring().
-		String[] childrenArray = ?? Call childrenString.split(). Check the API for details. The result will be an array
-				                    of strings, with the separating commas thrown away.
+			throw new TreeException("Improper format of input");
+		
+		String parent = line.substring(0, colonIndex);
+		String childrenString = line.substring(colonIndex + 1);
+		
+		String[] childrenArray = childrenString.split(","); //Call childrenString.split(). Check the API for details. The result will be an array
+				                    //of strings, with the separating commas thrown away.
 		
 		// Find parent node. If root is null then the tree is empty and the
 		// parent node must be constructed. Otherwise the parent node should be 
 		// somewhere in the tree.
+		
 		TreeNode parentNode;
 		if (root == null)
 			parentNode = root = new TreeNode(parent);
 		else
 		{
-			parentNode = root.?????  There's a method in Node that searches for a named node. 
-			??? If the parent node wasn't found, there must have been something wrong in the 
-				data file. Throw an exception.
+			parentNode = root.getNodeWithName(parent);  //There's a method in Node that searches for a named node. 
+			if (parentNode == null) throw new TreeException("Parent node was not found");
 		}
 		
 		// Add child nodes to parentNode.
-		?? For each name in childrenArray, create a new node and add that node to parentNode.
+		for (String child: childrenArray) {
+			parentNode.addChild(new TreeNode(child));
+		}
+		//?? 
+		//For each name in childrenArray, create a new node and add that node to parentNode.
 	}
 	
 	
@@ -173,16 +177,16 @@ public class FamilyTree
 	TreeNode getMostRecentCommonAncestor(String name1, String name2) throws TreeException
 	{
 		// Get nodes for input names.
-		TreeNode node1 = root.???		// node whose name is name1
+		TreeNode node1 = root.getNodeWithName(name1);		// node whose name is name1
 		if (node1 == null)
-			??? Throw a TreeException with a useful message
-		TreeNode node2 = root.???		// node whose name is name2
+			throw new TreeException("Node with " + name1 + " was not found.");//Throw a TreeException with a useful message
+		TreeNode node2 = root.getNodeWithName(name2);		// node whose name is name2
 		if (node2 == null)
-			??? Throw TreeException with a useful message
+			throw new TreeException("Node with " + name2 + " was not found."); //Throw TreeException with a useful message
 		
 		// Get ancestors of node1 and node2.
-		ArrayList<TreeNode> ancestorsOf1 = ???
-		ArrayList<TreeNode> ancestorsOf2 = ???
+		ArrayList<TreeNode> ancestorsOf1 = node1.collectAncestorsToList();
+		ArrayList<TreeNode> ancestorsOf2 = node2.collectAncestorsToList();
 		
 		// Check members of ancestorsOf1 in order until you find a node that is also
 		// an ancestor of 2. 
